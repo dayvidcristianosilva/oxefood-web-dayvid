@@ -14,13 +14,12 @@ class MenuSistema extends React.Component {
         return (
             <>
                 <Menu inverted>
-
                     <Menu.Item
                         name='home'
                         active={this.state.activeItem === 'home'}
                         onClick={this.handleItemClick}
                         as={Link}
-                        to='/'
+                        to='/home'
                     />
 
                     <Menu.Item
@@ -47,11 +46,11 @@ class MenuSistema extends React.Component {
                         to='/form-entregador'
                     />
                     <Menu.Item
-                        name='fornecedor'
-                        active={this.state.activeItem === 'fornecedor'}
-                        onClick={this.handleItemClick}
+                        className='navbar__item--mobile'
+                        onClick={this.logout}
+                        content='Sair'
                         as={Link}
-                        to='/list-fornecedor'
+                        to='/'
                     />
                 </Menu>
             </>
