@@ -4,6 +4,7 @@ import InputMask from 'react-input-mask';
 import { Link, useLocation } from "react-router-dom";
 import { Button, Container, Divider, Form, Icon } from 'semantic-ui-react';
 import MenuSistema from '../../MenuSistema';
+import { mensagemErro, notifyError, notifySuccess } from '../../views/util/Util';
 
 export default function FormCliente () {
 
@@ -11,6 +12,7 @@ export default function FormCliente () {
     const [idCliente, setIdCliente] = useState();
     
     const [nome, setNome] = useState();
+    const [email, setEmail] = useState();
     const [cpf, setCpf] = useState();
     const [dataNascimento, setDataNascimento] = useState();
     const [foneCelular, setFoneCelular] = useState();
@@ -24,6 +26,7 @@ export default function FormCliente () {
             .then((response) => {
                 setIdCliente(response.data.id)
                 setNome(response.data.nome)
+                setEmail(response.data.email)
                 setCpf(response.data.cpf)
                 setDataNascimento(formatarData(response.data.dataNascimento))
                 setFoneCelular(response.data.foneCelular)
@@ -47,6 +50,7 @@ export default function FormCliente () {
 
         let clienteRequest = {
             nome: nome,
+            email: email,
             cpf: cpf,
             dataNascimento: dataNascimento,
             foneCelular: foneCelular,
@@ -57,20 +61,30 @@ export default function FormCliente () {
 
             axios.put("http://localhost:8082/api/cliente/" + idCliente, clienteRequest)
             .then((response) => { 
-                console.log('Cliente alterado com sucesso.') 
+                notifySuccess('Cliente alterado com sucesso.')
             })
             .catch((error) => { 
-                console.log('Erro ao alter um cliente.') 
+                if (error.response) {
+                    notifyError(error.response.data.errors[0].defaultMessage)
+                } else {
+                    notifyError(mensagemErro)
+                } 
+                    
             })
 
         } else { //Cadastro:
 
             axios.post("http://localhost:8082/api/cliente", clienteRequest)
             .then((response) => { 
-                console.log('Cliente cadastrado com sucesso.') 
+                notifySuccess('Cliente cadastrado com sucesso.')
             })
             .catch((error) => { 
-                console.log('Erro ao incluir o cliente.') 
+                if (error.response) {
+                    notifyError(error.response.data.errors[0].defaultMessage)
+                } else {
+                    notifyError(mensagemErro)
+                } 
+                    
             })
         }
     }
@@ -123,6 +137,15 @@ export default function FormCliente () {
                                 </Form.Input>
 
                             </Form.Group>
+
+                            <Form.Input
+                                    required
+                                    fluid
+                                    label='Email'
+                                    maxLength="100"
+                                    value={email}
+			                        onChange={e => setEmail(e.target.value)}
+                                />
                             
                             <Form.Group>
 

@@ -10,24 +10,46 @@ export default function ListCliente() {
     const [openModal, setOpenModal] = useState(false);
     const [idRemover, setIdRemover] = useState();
 
-
-
     useEffect(() => {
+
         carregarLista();
+
     }, [])
 
+    function carregarLista() {
+
+        axios.get("http://localhost:8082/api/cliente")
+            .then((response) => {
+
+                setLista(response.data)
+
+            })
+    }
+
+    function formatarData(dataParam) {
+
+        if (dataParam === null || dataParam === '' || dataParam === undefined) {
+            return ''
+        }
+
+        //let arrayData = dataParam.split('-');
+        return dataParam[2] + '/' + dataParam[1] + '/' + dataParam[0];
+    }
+
     function confirmaRemover(id) {
+
         setOpenModal(true)
         setIdRemover(id)
     }
+
     async function remover() {
 
-        await axios.delete('http://localhost:8080/api/cliente/' + idRemover)
+        await axios.delete('http://localhost:8082/api/cliente/' + idRemover)
             .then((response) => {
 
                 console.log('Cliente removido com sucesso.')
 
-                axios.get("http://localhost:8080/api/cliente")
+                axios.get("http://localhost:8082/api/cliente")
                     .then((response) => {
                         setLista(response.data)
                     })
@@ -35,28 +57,16 @@ export default function ListCliente() {
             .catch((error) => {
                 console.log('Erro ao remover um cliente.')
             })
+
         setOpenModal(false)
     }
 
-    function carregarLista() {
-
-        axios.get("http://localhost:8082/api/cliente")
-            .then((response) => {
-                setLista(response.data)
-            })
-    }
-    function formatarData(dataParam) {
-
-        if (dataParam === null || dataParam === '' || dataParam === undefined) {
-            return ''
-        }
-
-        let arrayData = dataParam.split('-');
-        return arrayData[2] + '/' + arrayData[1] + '/' + arrayData[0];
-    }
     return (
+
         <div>
+
             <MenuSistema />
+
             <div style={{ marginTop: '3%' }}>
 
                 <Container textAlign='justified' >
@@ -65,6 +75,7 @@ export default function ListCliente() {
                     <Divider />
 
                     <div style={{ marginTop: '4%' }}>
+
                         <Button
                             label='Novo'
                             circular
@@ -74,6 +85,7 @@ export default function ListCliente() {
                             as={Link}
                             to='/form-cliente'
                         />
+
                         <br /><br /><br />
 
                         <Table color='orange' sortable celled>
@@ -109,7 +121,6 @@ export default function ListCliente() {
                                                 icon>
                                                 <Link to="/form-cliente" state={{ id: cliente.id }} style={{ color: 'green' }}> <Icon name='edit' /> </Link>
                                             </Button> &nbsp;
-
                                             <Button
                                                 inverted
                                                 circular
@@ -129,6 +140,7 @@ export default function ListCliente() {
                     </div>
                 </Container>
             </div>
+
             <Modal
                 basic
                 onClose={() => setOpenModal(false)}
@@ -148,6 +160,7 @@ export default function ListCliente() {
                     </Button>
                 </Modal.Actions>
             </Modal>
+
         </div>
     )
 }

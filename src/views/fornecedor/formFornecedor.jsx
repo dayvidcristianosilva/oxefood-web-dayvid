@@ -1,84 +1,40 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import InputMask from 'react-input-mask';
 import { Link, useLocation } from "react-router-dom";
 import { Button, Container, Divider, Form, Icon } from 'semantic-ui-react';
 import MenuSistema from '../../MenuSistema';
 
-export default function FormFornecedor() {
+export default function FormFornecedor () {
 
     const { state } = useLocation();
-    const [idFornecedor, setIdFornecedor] = useState();
-
+    
     const [nome, setNome] = useState();
     const [endereco, setEndereco] = useState();
     const [dataFundacao, setDataFundacao] = useState();
     const [valorMercado, setValorMercado] = useState();
-    const [contatoFornecedor, setContato] = useState();
     const [paginaWeb, setPaginaWeb] = useState();
-
-
-    useEffect(() => {
-
-        if (state != null && state.id != null) {
-
-            axios.get("http://localhost:8082/api/fornecedor/" + state.id)
-                .then((response) => {
-                    setIdFornecedor(response.data.id)
-                    setNome(response.data.nome)
-                    setDataFundacao(formatarData(response.data.dataFundacao))
-                    setEndereco(response.data.endereco)
-                    setValorMercado(response.data.valorMercado)
-                    setContato(response.data.contatoFornecedor)
-                    setPaginaWeb(response.data.paginaWeb)
-                })
-        }
-
-    }, [state])
-
-    function formatarData(dataParam) {
-
-        if (dataParam === null || dataParam === '' || dataParam === undefined) {
-            return ''
-        }
-
-        let arrayData = dataParam.split('-');
-        return arrayData[2] + '/' + arrayData[1] + '/' + arrayData[0];
-    }
+    const [contatoVendedor, setContatoVendedor] = useState();
 
     function salvar() {
 
-        let FornecedorRequest = {
+        let fornecedorRequest = {
             nome: nome,
             endereco: endereco,
             dataFundacao: dataFundacao,
             valorMercado: valorMercado,
-            contatoFornecedor: contatoFornecedor,
-            paginaWeb: paginaWeb
+            paginaWeb: paginaWeb,
+            contatoVendedor: contatoVendedor
         }
-
-        if (idFornecedor != null) { //Alteração:
-
-            axios.put("http://localhost:8082/api/fornecedor/" + idFornecedor, FornecedorRequest)
-                .then((response) => {
-                    console.log('Fornecedor alterado com sucesso.')
-                })
-                .catch((error) => {
-                    console.log('Erro ao alter um Fornecedor.')
-                })
-
-        } else { //Cadastro:
-
-            axios.post("http://localhost:8082/api/fornecedor", FornecedorRequest)
-                .then((response) => {
-                    console.log('Fornecedor cadastrado com sucesso.')
-                })
-                .catch((error) => {
-                    console.log('Erro ao incluir o Fornecedor.')
-                })
-        }
+ 
+        axios.post("http://localhost:8082/api/fornecedor", fornecedorRequest)
+        .then((response) => { 
+            console.log('Fornecedor cadastrado com sucesso.') 
+        })
+        .catch((error) => { 
+            console.log('Erro ao incluir o fornecedor.') 
+        })
     }
-
 
     return (
 
@@ -86,24 +42,19 @@ export default function FormFornecedor() {
 
             <MenuSistema />
 
-            <div style={{ marginTop: '3%' }}>
+            <div style={{marginTop: '3%'}}>
 
                 <Container textAlign='justified' >
 
-                    {idFornecedor === undefined &&
-                        <h2> <span style={{ color: 'darkgray' }}> Fornecedor &nbsp;<Icon name='angle double right' size="small" /> </span> Cadastro</h2>
-                    }
-                    {idFornecedor != undefined &&
-                        <h2> <span style={{ color: 'darkgray' }}> Fornecedor &nbsp;<Icon name='angle double right' size="small" /> </span> Alteração</h2>
-                    }
+                    <h2> <span style={{color: 'darkgray'}}> Fornecedor &nbsp;<Icon name='angle double right' size="small" /> </span> Cadastro</h2>
 
                     <Divider />
 
-                    <div style={{ marginTop: '4%' }}>
+                    <div style={{marginTop: '4%'}}>
 
                         <Form>
 
-                            <Form.Group widths='equal'>
+                            <Form.Group>
 
                                 <Form.Input
                                     required
@@ -111,71 +62,64 @@ export default function FormFornecedor() {
                                     label='Nome'
                                     maxLength="100"
                                     value={nome}
+                                    width={14}
                                     onChange={e => setNome(e.target.value)}
                                 />
 
                                 <Form.Input
-                                    label='Data Fundação'
-                                    width={6}
+                                    fluid
+                                    label='Data de Fundação'
+                                    width={4}
                                 >
-                                    <InputMask
-                                        mask="99/99/9999"
+                                    <InputMask 
+                                        mask="99/99/9999" 
                                         maskChar={null}
                                         placeholder="Ex: 20/03/1985"
                                         value={dataFundacao}
-                                        onChange={e => setDataFundacao(e.target.value)}
-                                    />
+				                        onChange={e => setDataFundacao(e.target.value)}
+                                    /> 
                                 </Form.Input>
+
                             </Form.Group>
 
-                            <Form.Group widths='equal'>
-                                <Form.Input
-                                    fluid
-                                    label='Endereço'
-                                    maxLength="200"
-                                    value={endereco}
-                                    onChange={e => setEndereco(e.target.value)}
-                                />
-                            </Form.Group>
+                            <Form.Input
+                                fluid
+                                label='Endereço'
+                                maxLength="100"
+                                value={endereco}
+                                onChange={e => setEndereco(e.target.value)}
+                            />
 
-                            <Form.Group widths='equal'>
+                            <Form.Group>
+
                                 <Form.Input
-                                 
                                     fluid
-                                    label='Valor do Mercado'
-                                    maxLength="100"
+                                    label='Valor de Mercado'
                                     width={6}
                                     value={valorMercado}
                                     onChange={e => setValorMercado(e.target.value)}
-
                                 />
 
                                 <Form.Input
-                                    
                                     fluid
                                     label='Contato do Vendedor'
-                                    maxLength="100"
-                                    value={contatoFornecedor}
-                                    onChange={e => setContato(e.target.value)}
+                                    width={12}
+                                    value={contatoVendedor}
+                                    onChange={e => setContatoVendedor(e.target.value)}
                                 />
 
                             </Form.Group>
 
-                            <Form.Group widths='equal'>
-                                
                             <Form.Input
-                                    
-                                    fluid
-                                    label='Página WEB'
-                                    maxLength="100"
-                                    value={paginaWeb}
-                                    onChange={e => setPaginaWeb(e.target.value)}
-                                />
-                            </Form.Group>
-
+                                fluid
+                                label='Página Web'
+                                value={paginaWeb}
+                                onChange={e => setPaginaWeb(e.target.value)}
+                            />
+                        
                         </Form>
-
-                        <div style={{ marginTop: '4%' }}>
+                        
+                        <div style={{marginTop: '4%'}}>
 
                             <Button
                                 type="button"
@@ -186,9 +130,9 @@ export default function FormFornecedor() {
                                 color='orange'
                             >
                                 <Icon name='reply' />
-                                <Link to={'/list-fornecedor'}>Voltar</Link>
+                                <Link to={'/list-cliente'}>Voltar</Link>
                             </Button>
-
+                                
                             <Button
                                 inverted
                                 circular
@@ -205,7 +149,7 @@ export default function FormFornecedor() {
                         </div>
 
                     </div>
-
+                    
                 </Container>
             </div>
         </div>

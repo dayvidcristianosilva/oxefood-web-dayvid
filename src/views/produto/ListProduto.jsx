@@ -1,44 +1,72 @@
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Container, Divider, Icon, Table } from 'semantic-ui-react';
+import { Button, Container, Divider, Form, Header, Icon, Menu, Modal, Segment, Table } from 'semantic-ui-react';
 import MenuSistema from '../../MenuSistema';
 
-export default function ListProduto() {
+export default function ListProduto () {
 
-    const [lista, setLista] = useState([]);
+    const [listaProdutos, setListaProdutos] = useState([]);
+    const [openModal, setOpenModal] = useState(false);
+    const [idRemover, setIdRemover] = useState();
     const [menuFiltro, setMenuFiltro] = useState();
     const [codigo, setCodigo] = useState();
     const [titulo, setTitulo] = useState();
     const [idCategoria, setIdCategoria] = useState();
     const [listaCategoriaProduto, setListaCategoriaProduto] = useState([]);
 
-
     useEffect(() => {
+
         carregarLista();
+        
     }, [])
 
-    function carregarLista() {
+    function carregarLista () {
 
         axios.get("http://localhost:8082/api/produto")
-            .then((response) => {
-                setLista(response.data)
-            })
+        .then((response) => {
+            setListaProdutos(response.data);
+        })
 
-        axios.get("http://localhost:8080/api/categoriaproduto")
-            .then((response) => {
+        axios.get("http://localhost:8082/api/categoriaproduto")
+        .then((response) => {
 
-                const dropDownCategorias = [];
-                dropDownCategorias.push({ text: '', value: '' });
-                response.data.map(c => (
-                    dropDownCategorias.push({ text: c.descricao, value: c.id })
-                ))
+            const dropDownCategorias = [];
+            dropDownCategorias.push({ text: '', value: '' });
+            response.data.map(c => (
+                dropDownCategorias.push({ text: c.descricao, value: c.id })
+            ))
 
-                setListaCategoriaProduto(dropDownCategorias)
-
-            })
+            setListaCategoriaProduto(dropDownCategorias)
+        })
 
     }
+
+    function confirmaRemover(id) {
+
+        setOpenModal(true);
+        setIdRemover(id);
+    }
+
+    async function remover() {
+
+        await axios.delete('http://localhost:8082/api/produto/' + idRemover)
+        .then((response) => {
+   
+            setOpenModal(false)
+            console.log('Produto removido com sucesso.')
+   
+            axios.get("http://localhost:8082/api/produto")
+            .then((response) => {
+                setListaProdutos(response.data)
+            })
+        })
+        .catch((error) => {
+            setOpenModal(false)
+            console.log('Erro ao remover um produto.')
+        })
+    }
+
     function handleMenuFiltro() {
 
         if (menuFiltro === true) {
@@ -62,6 +90,7 @@ export default function ListProduto() {
 
         filtrarProdutos(codigo, titulo, value);
     }
+
     async function filtrarProdutos(codigoParam, tituloParam, idCategoriaParam) {
 
         let formData = new FormData();
@@ -79,23 +108,29 @@ export default function ListProduto() {
             formData.append('idCategoria', idCategoriaParam);
         }
 
-        await axios.post("http://localhost:8080/api/produto/filtrar", formData)
-            .then((response) => {
-                setListaProdutos(response.data)
-            })
+        await axios.post("http://localhost:8082/api/produto/filtrar", formData)
+        .then((response) => {
+            setListaProdutos(response.data)
+        })
+    
     }
 
     return (
+
         <div>
+
             <MenuSistema />
-            <div style={{ marginTop: '3%' }}>
+
+            <div style={{marginTop: '3%'}}>
 
                 <Container textAlign='justified' >
 
-                    <h2> PListProduto </h2>
+                    <h2> Produto </h2>
+
                     <Divider />
 
-                    <div style={{ marginTop: '4%' }}>
+                    <div style={{marginTop: '4%'}}>
+
                         <Menu compact>
                             <Menu.Item
                                 name='menuFiltro'
@@ -113,15 +148,15 @@ export default function ListProduto() {
                             color='orange'
                             icon='clipboard outline'
                             floated='right'
-                            as={Link}
-                            to='/form-PListProduto'
+                            as={Link} 
+                            to='/form-produto'
                         />
 
-                        {menuFiltro ?
-
+                        { menuFiltro ?
+                            
                             <Segment>
                                 <Form className="form-filtros">
-
+                                    
                                     <Form.Input
                                         icon="search"
                                         value={codigo}
@@ -131,7 +166,9 @@ export default function ListProduto() {
                                         labelPosition='left'
                                         width={4}
                                     />
-                                    <Form.Group widths='equal'>
+                                    
+                                    <Form.Group widths='equal'> 
+                                    
                                         <Form.Input
                                             icon="search"
                                             value={titulo}
@@ -140,66 +177,69 @@ export default function ListProduto() {
                                             placeholder='Filtrar por título'
                                             labelPosition='left'
                                         />
+                                        
                                         <Form.Select
                                             placeholder='Filtrar por Categoria'
                                             label='Categoria'
                                             options={listaCategoriaProduto}
                                             value={idCategoria}
-                                            onChange={(e, { value }) => {
+                                            onChange={(e,{value}) => {
                                                 handleChangeCategoriaProduto(value)
                                             }}
                                         />
-
+                                        
                                     </Form.Group>
                                 </Form>
-                            </Segment> : ""
+                            </Segment>:""
                         }
 
-                        <br /><br /><br />
-
+                        <br/><br/>
+                    
                         <Table color='orange' sortable celled>
 
                             <Table.Header>
                                 <Table.Row>
+                                    <Table.HeaderCell>Código</Table.HeaderCell>
+                                    <Table.HeaderCell>Categoria</Table.HeaderCell>
                                     <Table.HeaderCell>Título</Table.HeaderCell>
-                                    <Table.HeaderCell>Código do Produto</Table.HeaderCell>
-                                    <Table.HeaderCell>Descrição do Produto</Table.HeaderCell>
+                                    <Table.HeaderCell>Descrição</Table.HeaderCell>
                                     <Table.HeaderCell>Valor Unitário</Table.HeaderCell>
-                                    <Table.HeaderCell>Tempo de Entrega Mín</Table.HeaderCell>
-                                    <Table.HeaderCell>Tempo de Entrega Máx</Table.HeaderCell>
-                                    <Table.HeaderCell textAlign='center'>Ações</Table.HeaderCell>
+                                    <Table.HeaderCell>Tempo Mínimo de Entrega</Table.HeaderCell>
+                                    <Table.HeaderCell>Tempo Máximo de Entrega</Table.HeaderCell>
+                                    <Table.HeaderCell textAlign='center' width={2}>Ações</Table.HeaderCell>
                                 </Table.Row>
                             </Table.Header>
-
+                        
                             <Table.Body>
 
-                                {lista.map(produto => (
+                                { listaProdutos.map(p => (
 
-                                    <Table.Row key={produto.id}>
-                                        <Table.Cell>{produto.titulo}</Table.Cell>
-                                        <Table.Cell>{produto.codigo}</Table.Cell>
-                                        <Table.Cell>{produto.descricao}</Table.Cell>
-                                        <Table.Cell>{produto.valorunitario}</Table.Cell>
-                                        <Table.Cell>{produto.entregamin}</Table.Cell>
-                                        <Table.Cell>{produto.entregamax}</Table.Cell>
+                                    <Table.Row key={p.id}>
+                                        <Table.Cell>{p.codigo}</Table.Cell>
+                                        <Table.Cell>{p.categoria.descricao}</Table.Cell>
+                                        <Table.Cell>{p.titulo}</Table.Cell>
+                                        <Table.Cell>{p.descricao}</Table.Cell>
+                                        <Table.Cell>{p.valorUnitario}</Table.Cell>
+                                        <Table.Cell>{p.tempoEntregaMinimo}</Table.Cell>
+                                        <Table.Cell>{p.tempoEntregaMaximo}</Table.Cell>
                                         <Table.Cell textAlign='center'>
-
+                                            
+                                        <Button
+                                            inverted
+                                            circular
+                                            color='green'
+                                            title='Clique aqui para editar os dados deste cliente'
+                                            icon>
+                                                <Link to="/form-produto" state={{id: p.id}} style={{color: 'green'}}> <Icon name='edit' /> </Link>
+                                        </Button> &nbsp;
+                                            
                                             <Button
                                                 inverted
                                                 circular
-                                                color='green'
-                                                title='Clique aqui para editar os dados deste produto'
-                                                icon>
-                                                <Icon name='edit' />
-                                            </Button> &nbsp;
-                                            <Button
-                                                inverted
-                                                circular
+                                                icon='trash'
                                                 color='red'
-                                                title='Clique aqui para remover este produto'
-                                                icon>
-                                                <Icon name='trash' />
-                                            </Button>
+                                                title='Clique aqui para remover este cliente' 
+                                                onClick={() => confirmaRemover(p.id)} />
 
                                         </Table.Cell>
                                     </Table.Row>
@@ -211,6 +251,26 @@ export default function ListProduto() {
                 </Container>
             </div>
 
+            <Modal
+                basic
+                onClose={() => setOpenModal(false)}
+                onOpen={() => setOpenModal(true)}
+                open={openModal}
+            >
+                <Header icon>
+                        <Icon name='trash' />
+                        <div style={{marginTop: '5%'}}> Tem certeza que deseja remover esse registro? </div>
+                </Header>
+                <Modal.Actions>
+                        <Button basic color='red' inverted onClick={() => setOpenModal(false)}>
+                            <Icon name='remove' /> Não
+                        </Button>
+                        <Button color='green' inverted onClick={() => remover()}>
+                            <Icon name='checkmark' /> Sim
+                        </Button>
+                </Modal.Actions>
+            </Modal>
+            
         </div>
     )
 }
